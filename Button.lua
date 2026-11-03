@@ -74,16 +74,26 @@ function ButtonMixin:OnClick(mouseButton)
 end
 
 ---@param parent Frame
+---@param secureClick Button?
 ---@return LMM_Button
-function Button:New(parent)
+function Button:New(parent, secureClick)
   if not parent then
     error("Button needs a parent")
   end
 
   local buttonStyle = Constants.button
-  local shell = CreateFrame("Button", nil, parent)
+  local template = nil
+  if secureClick then
+    template = "SecureActionButtonTemplate"
+  end
+  local shell = CreateFrame("Button", nil, parent, template)
   shell:SetSize(buttonStyle.size, buttonStyle.size)
   shell:RegisterForClicks("AnyUp")
+  if secureClick then
+    shell:SetAttribute("type", "click")
+    shell:SetAttribute("clickbutton", secureClick)
+    shell:SetAttribute("useOnKeyDown", false)
+  end
 
   local border = createWhiteTexture(shell, 0)
   border:SetAllPoints()
@@ -103,6 +113,10 @@ function Button:New(parent)
   setButtonColors(button, buttonStyle.borderColor, buttonStyle.backgroundColor)
   button:SetScript("OnEnter", ButtonMixin.OnEnter)
   button:SetScript("OnLeave", ButtonMixin.OnLeave)
-  button:SetScript("OnClick", ButtonMixin.OnClick)
+  if secureClick then
+    button:SetScript("PostClick", ButtonMixin.OnClick)
+  else
+    button:SetScript("OnClick", ButtonMixin.OnClick)
+  end
   return button
 end

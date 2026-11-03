@@ -10,6 +10,21 @@ local ContainerMixin = {}
 
 local Constants = addon.Constants
 
+---@param button LMM_Button
+---@param offsetX number
+---@param offsetY number
+local function pointButton(button, offsetX, offsetY)
+  if InCombatLockdown() and button:IsProtected() then
+    return
+  end
+  local parent = button:GetParent()
+  if not parent then
+    return
+  end
+  button:ClearAllPoints()
+  button:SetPoint("TOPLEFT", parent, "TOPLEFT", offsetX, offsetY)
+end
+
 ---@param buttons LMM_Button[]
 function ContainerMixin:Layout(buttons)
   local buttonStyle = Constants.button
@@ -22,8 +37,7 @@ function ContainerMixin:Layout(buttons)
     local offset = 0
     for index = 1, count do
       local button = buttons[index]
-      button:ClearAllPoints()
-      button:SetPoint("TOPLEFT", frame, "TOPLEFT", 0, -offset)
+      pointButton(button, 0, -offset)
       offset = offset + size + gap
     end
     if count == 0 then
@@ -50,8 +64,7 @@ function ContainerMixin:Layout(buttons)
   local row = 0
   for index = 1, count do
     local button = buttons[index]
-    button:ClearAllPoints()
-    button:SetPoint("TOPLEFT", frame, "TOPLEFT", column * stride, -(row * stride))
+    pointButton(button, column * stride, -(row * stride))
     column = column + 1
     if column >= columns then
       column = 0

@@ -16,8 +16,7 @@ local deferred = false
 local hovered = false
 local ready = false
 
----@type Frame?
-local hookedMenu
+local watchingMenu = false
 
 ---@type LMM_CollectionButton[]
 local rows = {}
@@ -80,16 +79,21 @@ local function attentionOpen()
   return QueueStatusFrame:IsShown()
 end
 
-function Buttons:HookOpenMenu()
-  local menu = Menu.GetManager():GetOpenMenu()
-  if not menu or menu == hookedMenu then
+local function watchMenu()
+  if Menu.GetManager():IsAnyMenuOpen() then
+    C_Timer.After(0.1, watchMenu)
     return
   end
-  hookedMenu = menu
-  menu:HookScript("OnHide", function()
-    hookedMenu = nil
-    addon.Map:SetHovered(false)
-  end)
+  watchingMenu = false
+  addon.Map:SetHovered(false)
+end
+
+function Buttons:WatchOpenMenu()
+  if watchingMenu or not Menu.GetManager():IsAnyMenuOpen() then
+    return
+  end
+  watchingMenu = true
+  C_Timer.After(0.1, watchMenu)
 end
 
 ---@param row LMM_CollectionButton
@@ -206,10 +210,20 @@ local function onLeaveCombat()
   Buttons:Layout()
 end
 
+---@param button LMM_Button
+---@return boolean
+local function canMove(button)
+  if InCombatLockdown() and button:IsProtected() then
+    deferred = true
+    return false
+  end
+  return true
+end
+
 ---@param row LMM_CollectionButton
 local function attachButton(row)
   local container = containers[row.container]
-  local button = Button:New(container.frame)
+  local button = Button:New(container.frame, row.secureClick)
   button.row = row
   row.button = button
 end
@@ -253,10 +267,18 @@ function Buttons:Layout()
     local button = row.button
     local list = shown[row.container]
     if button and list and wantsRow(row) and setIcon(row) then
-      button:Show()
-      list[#list + 1] = button
+      if canMove(button) then
+        button:Show()
+      end
+      if button:IsShown() then
+        list[#list + 1] = button
+      end
     elseif button then
-      button:Hide()
+      if canMove(button) then
+        button:Hide()
+      elseif button:IsShown() then
+        list[#list + 1] = button
+      end
     end
   end
 

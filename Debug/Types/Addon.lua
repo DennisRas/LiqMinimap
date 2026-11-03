@@ -38,6 +38,7 @@
 ---@field onEnter fun(button: LMM_Button)?
 ---@field onLeave fun(button: LMM_Button)?
 ---@field onClick fun(mouseButton: string)?
+---@field secureClick Button?
 ---@field button LMM_Button?
 
 ---@alias LMM_ContainerStack "column" | "wrap"

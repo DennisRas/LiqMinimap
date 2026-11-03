@@ -22,7 +22,7 @@ local function onTrackingClick(mouseButton)
     tracking:SetPoint("CENTER", button, "CENTER")
   end
   tracking:OpenMenu()
-  Buttons:HookOpenMenu()
+  Buttons:WatchOpenMenu()
   local menu = Menu.GetManager():GetOpenMenu()
   if menu then
     menu:ClearAllPoints()

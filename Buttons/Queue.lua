@@ -20,10 +20,8 @@ local function onQueueLeave()
   QueueStatusFrame:Hide()
 end
 
----@param mouseButton string
-local function onQueueClick(mouseButton)
-  QueueStatusButton:OnClick(mouseButton)
-  Buttons:HookOpenMenu()
+local function onQueueClick()
+  Buttons:WatchOpenMenu()
 end
 
 ---@return boolean
@@ -81,6 +79,7 @@ local row = {
   onEnter = onQueueEnter,
   onLeave = onQueueLeave,
   onClick = onQueueClick,
+  secureClick = QueueStatusButton,
 }
 Buttons:Register(row)
 Buttons:OnHideDefault(hideDefault)
