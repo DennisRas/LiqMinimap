@@ -1,0 +1,42 @@
+---@class LMM_Addon
+local addon = select(2, ...)
+
+---@class LMM_Data
+local Data = {}
+addon.Data = Data
+
+local LibAceDB = addon.libs.AceDB
+
+Data.dbVersion = 1
+
+---@type table
+Data.defaultDB = {
+  ---@type LMM_Global
+  global = {
+    dbVersion = 1,
+    liqui = {
+      windows = {},
+      tables = {},
+    },
+    logs = {
+      lines = {},
+      autoScroll = true,
+      autoShow = false,
+    },
+  },
+}
+
+function Data:Initialize()
+  self.db = LibAceDB:New("LiqMinimapDB", self.defaultDB, true)
+  self:MigrateDB()
+end
+
+---@diagnostic disable: undefined-field, inject-field
+function Data:MigrateDB()
+  local stored = self.db.global.dbVersion
+  if stored == Data.dbVersion then
+    return
+  end
+  self.db.global.dbVersion = Data.dbVersion
+end
+---@diagnostic enable: undefined-field, inject-field

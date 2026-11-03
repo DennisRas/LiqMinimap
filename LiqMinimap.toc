@@ -1,0 +1,33 @@
+## Interface: 120105
+## Title: Liq Minimap
+## Notes: Minimalist minimap, with Blizzard icons on the left and addon icons along the bottom.
+## Version: @project-version@
+## Author: Liquidor
+## SavedVariables: LiqMinimapDB
+## IconTexture: Interface/Icons/INV_Misc_Map_01
+## X-Website: https://github.com/DennisRas/LiqMinimap
+
+Libs\LibStub\LibStub.lua
+Libs\CallbackHandler-1.0\CallbackHandler-1.0.xml
+Libs\LibDataBroker-1.1\LibDataBroker-1.1.lua
+Libs\LibDBIcon-1.0\lib.xml
+Libs\LiqUI\LiqUI.xml
+Libs\AceAddon-3.0\AceAddon-3.0.xml
+Libs\AceTimer-3.0\AceTimer-3.0.xml
+Libs\AceDB-3.0\AceDB-3.0.xml
+Libs\AceConsole-3.0\AceConsole-3.0.xml
+
+Boot.lua
+Constants.lua
+Helpers.lua
+Data.lua
+LiqMinimap.lua
+Shape.lua
+Icons.lua
+Cluster.lua
+
+#@debug@
+Debug\Types\Addon.lua
+Debug\Types\Constants.lua
+Debug\Types\Data.lua
+#@end-debug@
