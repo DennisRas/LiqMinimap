@@ -7,7 +7,7 @@ Liq Minimap is a minimalist minimap for when the round one is mostly buttons. Th
 ## Features
 
 - You still move it and scale it in Edit Mode.
-- Two collections of icons: left for Blizzard icons, bottom for addon icons.
+- Two collections of icons: left for default icons, bottom for addon icons.
 - Certain icons are always hidden, such as the zoom buttons. Use the mouse wheel to zoom.
 - Addons from the addon compartment join the bottom collection.
 

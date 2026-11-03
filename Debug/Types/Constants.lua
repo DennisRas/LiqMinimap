@@ -1,23 +1,30 @@
----@class LMM_Layout
+---@class LMM_ButtonStyle
 ---@field size number
+---@field gap number
+---@field iconInset number
+---@field backgroundColor ColorRGBAData
+---@field backgroundHoverColor ColorRGBAData
 ---@field borderSize number
----@field borderOutset number
----@field iconSize number
----@field iconGap number
----@field columnGap number
----@field textSize number
----@field textInset number
-
----@class LMM_Chrome
----@field show LMM_ShowId
----@field collection LMM_CollectionId?
----@field order number?
+---@field borderColor ColorRGBAData
+---@field borderHoverColor ColorRGBAData
 
 ---@class LMM_Constants
 ---@field prefix string
 ---@field media { squareMask: string, border: string, textFont: string }
 ---@field show table<string, LMM_ShowId>
----@field collection table<string, LMM_CollectionId>
----@field layout LMM_Layout
----@field colors { border: ColorRGBAData }
----@field chrome { zone: LMM_Chrome, clock: LMM_Chrome, coords: LMM_Chrome, zoom: LMM_Chrome, compartment: LMM_Chrome, tracking: LMM_Chrome, calendar: LMM_Chrome, mail: LMM_Chrome, craftingOrders: LMM_Chrome, queue: LMM_Chrome, landing: LMM_Chrome, difficulty: LMM_Chrome }
+---@field container table<string, LMM_ContainerId>
+---@field map LMM_MapLayout
+---@field button LMM_ButtonStyle
+---@field containerGap number
+
+---@class LMM_MapBorder
+---@field edgeSize number
+---@field inset number
+---@field outset number
+---@field color ColorRGBAData
+
+---@class LMM_MapLayout
+---@field size number
+---@field labelSize number
+---@field labelInset number
+---@field border LMM_MapBorder

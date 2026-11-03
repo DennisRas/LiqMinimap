@@ -1,20 +1,21 @@
 ---@class LMM_Addon
 local addon = select(2, ...)
 
----@class LMM_Cluster
-local Cluster = {}
-addon.Cluster = Cluster
+---@class LMM_Map
+local Map = {}
+addon.Map = Map
 
 local Constants = addon.Constants
 local Helpers = addon.Helpers
 local LiqUI = addon.libs.LiqUI
 local Events = LiqUI.Events
 
-local BORDER_EDGE_SIZE = 16
+local HIDE_WAIT = 1
 
 local deferred = false
 local fitting = false
 local hovered = false
+local hideToken = 0
 local clockHooked = false
 local coordsFrame
 
@@ -40,7 +41,8 @@ local function findCoords(container)
   return nil
 end
 
-local function mouseOverMap()
+---@return boolean
+function Map:IsHolderHovered()
   if Minimap:IsMouseOver() then
     return true
   end
@@ -50,7 +52,7 @@ local function mouseOverMap()
   if TimeManagerClockButton and TimeManagerClockButton:IsMouseOver() then
     return true
   end
-  return false
+  return addon.Buttons:IsMouseOver()
 end
 
 local function setHover()
@@ -62,29 +64,56 @@ local function setHover()
   end
 
   local coords = findCoords(MinimapCluster.MinimapContainer)
-  if not coords then
+  if coords then
+    local showCoords = hovered and GetCVarBool("minimapShowPlayerCoords")
+    coords:SetAlpha(showCoords and 1 or 0)
+  end
+
+  addon.Buttons:SetHover(hovered)
+end
+
+---@param isHovered boolean
+function Map:SetHovered(isHovered)
+  if isHovered then
+    hideToken = hideToken + 1
+    if hovered then
+      return
+    end
+    hovered = true
+    setHover()
     return
   end
-  local showCoords = hovered and GetCVarBool("minimapShowPlayerCoords")
-  coords:SetAlpha(showCoords and 1 or 0)
+  hideToken = hideToken + 1
+  local token = hideToken
+  C_Timer.After(HIDE_WAIT, function()
+    if token ~= hideToken then
+      return
+    end
+    if Map:IsHolderHovered() or addon.Buttons:IsAttentionOpen() then
+      return
+    end
+    if not hovered then
+      return
+    end
+    hovered = false
+    setHover()
+  end)
 end
 
 local function onEnter()
-  hovered = true
-  setHover()
+  Map:SetHovered(true)
 end
 
 local function onLeave()
-  hovered = mouseOverMap()
-  setHover()
+  Map:SetHovered(false)
 end
 
 ---@param label FontString
 local function setLabelFont(label)
-  label:SetFont(Constants.media.textFont, Constants.layout.textSize, TEXT_FLAGS)
+  label:SetFont(Constants.media.textFont, Constants.map.labelSize, TEXT_FLAGS)
   label:SetShadowOffset(0, 0)
   label:SetWordWrap(false)
-  label:SetHeight(Constants.layout.textSize)
+  label:SetHeight(Constants.map.labelSize)
 end
 
 ---@param frame Frame
@@ -101,15 +130,15 @@ local function findLabel(frame)
 end
 
 local function setLabels()
-  local layout = Constants.layout
-  local inset = layout.textInset
+  local map = Constants.map
+  local inset = map.labelInset
   local zone = MinimapZoneText
   setLabelFont(zone)
   zone:ClearAllPoints()
   zone:SetPoint("TOPLEFT", Minimap, "TOPLEFT", inset, -inset)
   zone:SetJustifyH("LEFT")
   zone:SetJustifyV("TOP")
-  zone:SetWidth(Minimap:GetWidth() - (inset * 2) - (layout.textSize * 5))
+  zone:SetWidth(Minimap:GetWidth() - (inset * 2) - (map.labelSize * 5))
 
   local clock = TimeManagerClockTicker
   if clock then
@@ -141,34 +170,34 @@ local function setBorder()
   if border then
     return
   end
-  local layout = Constants.layout
+  local mapBorder = Constants.map.border
   local edge = CreateFrame("Frame", nil, Minimap, "BackdropTemplate")
   border = edge
-  local outset = layout.borderOutset
+  local outset = mapBorder.outset
   edge:SetPoint("TOPLEFT", Minimap, "TOPLEFT", -outset, outset)
   edge:SetPoint("BOTTOMRIGHT", Minimap, "BOTTOMRIGHT", outset, -outset)
   edge:EnableMouse(false)
   ---@type backdropInfo
   local borderBackdrop = {
     edgeFile = Constants.media.border,
-    edgeSize = BORDER_EDGE_SIZE,
+    edgeSize = mapBorder.edgeSize,
     insets = {
-      left = layout.borderSize,
-      right = layout.borderSize,
-      top = layout.borderSize,
-      bottom = layout.borderSize,
+      left = mapBorder.inset,
+      right = mapBorder.inset,
+      top = mapBorder.inset,
+      bottom = mapBorder.inset,
     },
   }
   edge:SetBackdrop(borderBackdrop)
-  local color = Constants.colors.border
+  local color = mapBorder.color
   edge:SetBackdropBorderColor(color.r, color.g, color.b, color.a)
 end
 
 local function setZone()
   local zone = MinimapCluster.ZoneTextButton
-  local inset = Constants.layout.textInset
+  local inset = Constants.map.labelInset
   zone:SetParent(Minimap)
-  zone:SetHeight(Constants.layout.textSize)
+  zone:SetHeight(Constants.map.labelSize)
   zone:ClearAllPoints()
   zone:SetPoint("TOPLEFT", Minimap, "TOPLEFT", inset, -inset)
 end
@@ -178,10 +207,10 @@ local function setClock()
   if not clock then
     return
   end
-  local inset = Constants.layout.textInset
+  local inset = Constants.map.labelInset
   clock:SetParent(Minimap)
   clock:SetHitRectInsets(0, 0, 0, 0)
-  clock:SetHeight(Constants.layout.textSize)
+  clock:SetHeight(Constants.map.labelSize)
   clock:ClearAllPoints()
   clock:SetPoint("TOPRIGHT", Minimap, "TOPRIGHT", -inset, -inset)
   clock:Show()
@@ -190,7 +219,7 @@ local function setClock()
   end
   clockHooked = true
   hooksecurefunc(clock, "SetPoint", function()
-    Cluster:SetLayout()
+    Map:SetLayout()
   end)
   clock:HookScript("OnEnter", onEnter)
   clock:HookScript("OnLeave", onLeave)
@@ -201,9 +230,9 @@ local function setCoords()
   if not coords then
     return
   end
-  local inset = Constants.layout.textInset
+  local inset = Constants.map.labelInset
   coords:SetParent(Minimap)
-  coords:SetHeight(Constants.layout.textSize)
+  coords:SetHeight(Constants.map.labelSize)
   coords:ClearAllPoints()
   coords:SetPoint("BOTTOMRIGHT", Minimap, "BOTTOMRIGHT", -inset, inset)
 end
@@ -224,7 +253,7 @@ local function raiseLabels()
   end
 end
 
-function Cluster:SetLayout()
+function Map:SetLayout()
   if fitting then
     return
   end
@@ -237,7 +266,7 @@ function Cluster:SetLayout()
 
   local cluster = MinimapCluster
   local container = cluster.MinimapContainer
-  local size = Constants.layout.size
+  local size = Constants.map.size
 
   Helpers:KeepHidden(cluster.IndicatorFrame)
   setBorder()
@@ -273,7 +302,7 @@ local function onLeaveCombat()
     return
   end
   deferred = false
-  Cluster:SetLayout()
+  Map:SetLayout()
 end
 
 ---@param _frame Frame
@@ -283,14 +312,14 @@ local function onAddonLoaded(_frame, _event, addonName)
   if addonName ~= "Blizzard_TimeManager" then
     return
   end
-  Cluster:SetLayout()
+  Map:SetLayout()
 end
 
 local function onContainerPoint()
-  Cluster:SetLayout()
+  Map:SetLayout()
 end
 
-function Cluster:Enable()
+function Map:Enable()
   local zone = MinimapCluster.ZoneTextButton
   local coords = findCoords(MinimapCluster.MinimapContainer)
   Events:RegisterEvent("PLAYER_REGEN_ENABLED", onLeaveCombat)

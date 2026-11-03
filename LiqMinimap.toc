@@ -1,6 +1,6 @@
 ## Interface: 120105
 ## Title: Liq Minimap
-## Notes: Minimalist minimap, with Blizzard icons on the left and addon icons along the bottom.
+## Notes: Minimalist minimap, with default icons on the left and addon icons along the bottom.
 ## Version: @project-version@
 ## Author: Liquidor
 ## SavedVariables: LiqMinimapDB
@@ -22,9 +22,19 @@ Constants.lua
 Helpers.lua
 Data.lua
 LiqMinimap.lua
-Shape.lua
-Icons.lua
-Cluster.lua
+Map.lua
+Button.lua
+Container.lua
+Buttons.lua
+Buttons\Tracking.lua
+Buttons\Calendar.lua
+Buttons\Mail.lua
+Buttons\Crafting.lua
+Buttons\Queue.lua
+Buttons\Landing.lua
+Buttons\Difficulty.lua
+Buttons\Zoom.lua
+Buttons\Addon.lua
 
 #@debug@
 Debug\Types\Addon.lua
