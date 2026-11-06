@@ -137,6 +137,15 @@ local function rowArt(row)
   return atlas
 end
 
+---@param button LMM_Button
+local function fitIcon(button)
+  local icon = button.icon
+  local inset = Constants.button.iconInset
+  icon:ClearAllPoints()
+  icon:SetPoint("TOPLEFT", button, "TOPLEFT", inset, -inset)
+  icon:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -inset, inset)
+end
+
 ---@param row LMM_CollectionButton
 ---@return boolean
 local function setIcon(row)
@@ -144,8 +153,15 @@ local function setIcon(row)
   if not button then
     return false
   end
-  local art = rowArt(row)
   local icon = button.icon
+  if row.onIcon then
+    if row.onIcon(icon) ~= true then
+      return false
+    end
+    fitIcon(button)
+    return true
+  end
+  local art = rowArt(row)
   if not art then
     icon:SetTexture(nil)
     return false
@@ -155,10 +171,7 @@ local function setIcon(row)
   else
     icon:SetAtlas(art, false)
   end
-  local inset = Constants.button.iconInset
-  icon:ClearAllPoints()
-  icon:SetPoint("TOPLEFT", button, "TOPLEFT", inset, -inset)
-  icon:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -inset, inset)
+  fitIcon(button)
   local scale = row.zoom
   local crop = 0
   if scale and scale > 1 then

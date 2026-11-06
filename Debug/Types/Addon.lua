@@ -14,6 +14,19 @@
 ---@field Map LMM_Map
 ---@field logger LiqUI_LoggerHandle|nil
 
+---@class LMM_AddonCandidate
+---@field kind "ldbicon" | "button" | "compartment"
+---@field score number
+---@field keys string[]
+---@field row LMM_CollectionButton
+---@field launcher LMM_LauncherButton?
+---@field entry LMM_CompartmentRow?
+
+---@class LMM_AddonCompartment : Frame
+---@field registeredAddons LMM_CompartmentRow[]?
+---@field RegisterAddon fun(self: LMM_AddonCompartment, data: LMM_CompartmentRow)
+---@field RegisterAddons fun(self: LMM_AddonCompartment)
+
 ---@class LMM_Button : Frame
 ---@field border Texture
 ---@field background Texture
@@ -35,11 +48,22 @@
 ---@field offsetY number?
 ---@field active? fun(): boolean
 ---@field events string[]?
+---@field onIcon (fun(icon: Texture): boolean)?
 ---@field onEnter fun(button: LMM_Button)?
 ---@field onLeave fun(button: LMM_Button)?
 ---@field onClick fun(mouseButton: string)?
 ---@field secureClick Button?
 ---@field button LMM_Button?
+
+---@class LMM_CompartmentClick
+---@field buttonName string
+
+---@class LMM_CompartmentRow
+---@field text string
+---@field icon string|number|nil
+---@field func fun(data: LMM_CompartmentRow, input: LMM_CompartmentClick, menu: Frame?)?
+---@field funcOnEnter fun(button: Frame)?
+---@field funcOnLeave fun(button: Frame)?
 
 ---@alias LMM_ContainerStack "column" | "wrap"
 
@@ -60,10 +84,31 @@
 
 ---@class LMM_Helpers
 
+---@class LMM_LauncherButton : Button
+---@field icon Texture?
+---@field db LMM_LauncherDB?
+---@field dataObject LMM_LauncherObject?
+---@field compartmentData LMM_CompartmentRow?
+
+---@class LMM_LauncherDB
+---@field hide boolean?
+---@field showInCompartment boolean?
+
+---@class LMM_LauncherObject
+---@field label string?
+---@field text string?
+---@field icon string|number|nil
+---@field OnClick fun(self: Frame, mouseButton: string)?
+---@field OnEnter fun(self: Frame)?
+---@field OnLeave fun(self: Frame)?
+---@field OnTooltipShow fun(tooltip: GameTooltip)?
+
 ---@class LMM_LibDBIcon
+---@field tooltip GameTooltip
 ---@field GetButtonList fun(self: LMM_LibDBIcon): string[]
----@field GetMinimapButton fun(self: LMM_LibDBIcon, name: string): Frame?
----@field RegisterCallback fun(target: table, event: string, callback: fun(event: string, button: Frame, name: string))
+---@field GetMinimapButton fun(self: LMM_LibDBIcon, name: string): LMM_LauncherButton?
+---@field Refresh fun(self: LMM_LibDBIcon, name: string, saved: LMM_LauncherDB?)
+---@field RegisterCallback fun(target: table, event: string, callback: fun(event: string, button: LMM_LauncherButton, name: string))
 
 ---@class LMM_Libs
 ---@field AceDB AceDB-3.0
